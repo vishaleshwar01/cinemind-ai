@@ -1,24 +1,172 @@
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useState } from "react";
+import axios from "axios";
+import "./App.css";
 
 function App() {
+
+  const [movies, setMovies] = useState([]);
+  const [search, setSearch] = useState("");
+  const [selectedMovie, setSelectedMovie] = useState(null);
+
+  useEffect(() => {
+
+    axios
+      .get(
+        "https://api.themoviedb.org/3/movie/popular?api_key=6664a87813547bbafda6d61e4d81c9b5"
+      )
+      .then((response) => {
+        setMovies(response.data.results);
+      });
+
+  }, []);
+
+  const searchMovies = () => {
+
+    axios
+      .get(
+        `https://api.themoviedb.org/3/search/movie?api_key=6664a87813547bbafda6d61e4d81c9b5&query=${search}`
+      )
+      .then((response) => {
+        setMovies(response.data.results);
+      });
+
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+
+    <div>
+
+      <nav className="navbar navbar-dark bg-dark px-3">
+        <h2 className="text-white">🎬 CineMind AI</h2>
+      </nav>
+
+      <div className="container mt-4">
+
+        <h1 className="mb-4">
+          Popular Movies
+        </h1>
+
+        <input
+          type="text"
+          className="form-control search-box"
+          placeholder="Search movies..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+
+        <button
+          className="btn btn-dark mt-2"
+          onClick={searchMovies}
         >
-          Learn React
-        </a>
-      </header>
+          Search
+        </button>
+
+        <div className="mt-4">
+
+          <h3>AI Recommendations</h3>
+
+          <div className="card p-3 ai-box">
+
+            <h5>Interstellar</h5>
+            <p>Great sci-fi movie with emotional storytelling.</p>
+
+            <h5>Inception</h5>
+            <p>Mind-bending thriller with complex concepts.</p>
+
+          </div>
+
+        </div>
+
+        <div className="row mt-4">
+
+          {movies.map((movie) => (
+
+            <div className="col-md-3 mb-4" key={movie.id}>
+
+              <div
+                className="card h-100 movie-card"
+                onClick={() => setSelectedMovie(movie)}
+              >
+
+                <img
+                  src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                  className="card-img-top"
+                  alt={movie.title}
+                />
+
+                <div className="card-body">
+
+                  <h5>{movie.title}</h5>
+
+                  <p>⭐ {movie.vote_average}</p>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          ))}
+
+        </div>
+
+      </div>
+
+      {selectedMovie && (
+
+        <div
+          className="modal d-block"
+          tabIndex="-1"
+          style={{ backgroundColor: "rgba(0,0,0,0.8)" }}
+        >
+
+          <div className="modal-dialog modal-lg">
+
+            <div className="modal-content bg-dark text-white">
+
+              <div className="modal-header">
+
+                <h5 className="modal-title">
+                  {selectedMovie.title}
+                </h5>
+
+                <button
+                  type="button"
+                  className="btn-close btn-close-white"
+                  onClick={() => setSelectedMovie(null)}
+                ></button>
+
+              </div>
+
+              <div className="modal-body text-center">
+
+                <img
+                  src={`https://image.tmdb.org/t/p/w500${selectedMovie.poster_path}`}
+                  alt={selectedMovie.title}
+                  className="img-fluid mb-3"
+                  style={{ maxHeight: "500px" }}
+                />
+
+                <p>
+                  ⭐ {selectedMovie.vote_average}
+                </p>
+
+                <p>
+                  {selectedMovie.overview}
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      )}
+
     </div>
+
   );
 }
 
