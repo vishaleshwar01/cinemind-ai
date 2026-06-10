@@ -32,6 +32,12 @@ body {
 }
 
 .ai-box {
-  background-color: #1f1f1f;
+  background-color: #fefdfd;
   border-radius: 10px;
+}
+.ai-box {
+  background-color: #1f1f1f !important;
+  color: white !important;
+  border: none;
+  white-space: pre-line;
 }

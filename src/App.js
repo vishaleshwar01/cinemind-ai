@@ -7,6 +7,9 @@ function App() {
   const [movies, setMovies] = useState([]);
   const [search, setSearch] = useState("");
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const [prompt, setPrompt] = useState("");
+const [aiResponse, setAiResponse] = useState("");
+const [loading, setLoading] = useState(false);
 
   useEffect(() => {
 
@@ -31,6 +34,63 @@ function App() {
       });
 
   };
+  const getRecommendation = async () => {
+
+  try {
+
+    setLoading(true);
+
+    const response = await axios.post(
+      "https://openrouter.ai/api/v1/chat/completions",
+      {
+        model: "openai/gpt-4o-mini",
+        messages: [
+          {
+            role: "user",
+            content: `
+Recommend 5 movies for: ${prompt}
+
+Rules:
+- Do not use numbering
+- Do not use *
+- Do not use bullet points
+- Return one movie per line
+- Format exactly:
+
+Movie Name - reason
+
+Example:
+Interstellar - Emotional sci-fi story about family and sacrifice.
+Arrival - Thoughtful science fiction with strong emotional themes.
+`
+          
+
+          }
+        ]
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.REACT_APP_OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    setAiResponse(
+      response.data.choices[0].message.content
+    );
+
+  } catch (error) {
+
+    console.error(error);
+    setAiResponse("Unable to get recommendations.");
+
+  } finally {
+
+    setLoading(false);
+
+  }
+};
 
   return (
 
@@ -45,14 +105,19 @@ function App() {
         <h1 className="mb-4">
           Popular Movies
         </h1>
-
         <input
-          type="text"
-          className="form-control search-box"
-          placeholder="Search movies..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+  type="text"
+  className="form-control search-box"
+  placeholder="Search movies..."
+  value={search}
+  onChange={(e) => setSearch(e.target.value)}
+  onKeyDown={(e) => {
+    if (e.key === "Enter") {
+      searchMovies();
+    }
+  }}
+/>
+
 
         <button
           className="btn btn-dark mt-2"
@@ -63,19 +128,43 @@ function App() {
 
         <div className="mt-4">
 
-          <h3>AI Recommendations</h3>
+          <div className="mt-4">
 
-          <div className="card p-3 ai-box">
+  <h3>AI Movie Assistant</h3>
 
-            <h5>Interstellar</h5>
-            <p>Great sci-fi movie with emotional storytelling.</p>
+  <input
+  type="text"
+  className="form-control"
+  placeholder="Example: emotional sci-fi movies"
+  value={prompt}
+  onChange={(e) => setPrompt(e.target.value)}
+  onKeyDown={(e) => {
+    if (e.key === "Enter") {
+      getRecommendation();
+    }
+  }}
+/>
 
-            <h5>Inception</h5>
-            <p>Mind-bending thriller with complex concepts.</p>
+  <button
+    className="btn btn-success mt-2"
+    onClick={getRecommendation}
+  >
+    Ask AI
+  </button>
 
-          </div>
+  <div className="card p-3 ai-box mt-3">
 
-        </div>
+    {loading ? (
+      <p>Thinking...</p>
+    ) : (
+      <p>{aiResponse}</p>
+    )}
+
+  </div>
+
+</div>
+ 
+     </div>
 
         <div className="row mt-4">
 
